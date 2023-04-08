@@ -1,0 +1,229 @@
+{% extends "extends/base.html" %}
+{% load static %}
+{% load friendshiptags %}
+
+{% block content %}
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Friends</h1>
+  </div>
+
+    <!-- Content Row -->
+  <div class="row">
+
+    <!-- Friends Main Card-->
+    <div class="col-xl-7 col-lg-7">
+      <div class="card w-100 shadow mb-4">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header">
+          <div class="nav">
+            <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+              <li class="nav-item">
+                  <a class="nav-link active" id="all-friends-tab" data-toggle="tab" href="#allfriends" role="tab" aria-controls="home" aria-selected="true">All Friends</a>
+              </li>
+
+              {% comment %}
+              <li class="nav-item">
+                  <a class="nav-link" id="followers-friends-tab" data-toggle="tab" href="#followers" role="tab" aria-controls="followers" aria-selected="false">Followers</a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" id="following-friends-tab" data-toggle="tab" href="#following" role="tab" aria-controls="following" aria-selected="false">Following</a>
+              </li>
+              {% endcomment %}
+
+              <li class="nav-item">
+                  <a class="nav-link" id="pending-friends-tab" data-toggle="tab" href="#pendingfriends" role="tab" aria-controls="pendingfriends" aria-selected="false">Pending
+                    <span id="" class="badge badge-primary badge-counter">{{pending_friends_count|default:"0" }}</span>
+
+                  </a>
+              </li>
+
+              <li class="nav-item">
+                  <a class="" id="search-friends-tab" data-toggle="tab" href="#searchusers" role="tab" aria-controls="searchusers" aria-selected="false"></a>
+              </li>
+
+              <!-- <li class="nav-item">
+                  <a class="nav-link" id="blocked-friends-tab" data-toggle="tab" href="#blockedfriends" role="tab" aria-controls="blockedfriends" aria-selected="false">Blocked</a>
+              </li>
+
+            </ul>
+            <ul class="nav nav-tabs card-header-tabs ml-auto">
+              <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+              <li class="nav-item dropdown no-arrow d-sm-none">
+                <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="fas fa-search fa-fw"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-left p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
+                  <form class="form-inline mr-auto w-75 navbar-search">
+                    <div class="input-group">
+                      <input id="searchbarSm" type="text" oninput="updateLiveSearchSm();" class="form-control bg-light border-0 small" placeholder="Add..." aria-label="Search" aria-describedby="basic-addon2">
+                      <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" onclick="updateLiveSearchSm();">
+                          <i class="fas fa-search fa-sm"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </li>
+              <li class="nav-item">
+                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-75 navbar-search">
+                  <div class="input-group">
+                    <input id="searchbarLg" type="text" oninput="updateLiveSearchLg();" class="form-control bg-light border-0" style="width:150px;" placeholder="Add Friends..." aria-label="Search" aria-describedby="basic-addon2">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="button" onclick="updateLiveSearchLg();">
+                        <i class="fas fa-search fa-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body">
+          <div class="tab-content" id="myTabContent">
+
+            <div class="tab-pane fade show active" id="allfriends" role="tabpanel" aria-labelledby="all-friends-tab">
+              <ul>
+                {% for friend in all_friends %}
+                  <li class="dropdown-item mb-2 mt-2" style="display: inline-block;" onclick="location.href='{% url 'profile' slug=friend%}';" >
+                    <text style='text-decoration: none; font-size: 1.15rem;'>{{friend}}</text>
+                    <span class="badge badge-pill badge-success">friend</span>
+
+                    {% if friend in coaches %}
+                      <span class="badge badge-pill badge-warning">coach</span>
+
+                      <!-- Remove Coach -->
+                      <form class="float-right" action="{% url 'removecoachclient' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" id="id_to_user" name="to_user" value="{{ friend.id }}">
+                        <button class="btn btn-danger btn-sm mx-1" type="submit" onclick="return confirm('Are you sure you would like to remove user as a coach?');" name="button">Remove Coach</button>
+                      </form>
+                    {% else %}
+                      {% if friend in clients %}
+                        <span class="badge badge-pill badge-info">client</span>
+                      {% else %}
+                        <!-- Add Coach -->
+                        <form class="float-right" action="{% url 'addcoach' %}" method="POST">
+                          {% csrf_token %}
+                          <input type="hidden" id="id_to_user" name="to_user" value="{{ friend.id }}">
+                          <button class="btn btn-warning btn-sm mx-1" type="submit" onclick="return confirm('Are you sure you would like to add user as a coach? Coaches are able to see all your logs and analytics.');" name="button">Add Coach</button>
+                        </form>
+                      {% endif %}
+                    {% endif %}
+
+                    <!-- Remove Friend -->
+                    <form class="float-right" action="{% url 'removefriend' %}" method="POST">
+                      {% csrf_token %}
+                      <input type="hidden" id="id_from_user" name="from_user" value="{{ friend.id }}">
+                      <button class="btn btn-danger btn-sm mx-1" type="submit" onclick="return confirm('Are you sure you would like to remove this friend?');" name="button">Remove Friend</button>
+                    </form>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            {% comment %}
+            <div class="tab-pane fade" id="followers" role="tabpanel" aria-labelledby="followers-friends-tab">...</div>
+            <div class="tab-pane fade" id="following" role="tabpanel" aria-labelledby="following-friends-tab">...</div>
+            {% endcomment %}
+
+            <div class="tab-pane fade" id="pendingfriends" role="tabpanel" aria-labelledby="pending-friends-tab">
+              <ul>
+                {% for friend_request in unrejected_friend_requests %}
+                  <li class="dropdown-item mb-2 mt-2 font-weight-bold" style="display: inline-block;" onclick="location.href='{% url 'profile' slug=friend_request.from_user%}';">
+                      <text style='text-decoration: none; font-size: 1.15rem;'>{{ friend_request.from_user }}</text>
+
+                    <!-- Accept Friend -->
+                    <form class="float-right" action="{% url 'acceptfriend' %}" method="POST">
+                      {% csrf_token %}
+                      <input type="hidden" id="id_from_user" name="from_user" value="{{ friend_request.from_user.id }}">
+                      <button class="btn btn-sm btn-success ml-2" type="submit" name="button">Accept</button>
+                    </form>
+
+                    <!-- Reject Friend -->
+                    <form class="float-right" action="{% url 'rejectfriend' %}" method="POST">
+                      {% csrf_token %}
+                      <input type="hidden" id="id_from_user" name="from_user" value="{{ friend_request.from_user.id }}">
+                      <button class="btn btn-sm btn-danger" type="submit" name="button">Reject</button>
+                    </form>
+                  </li>
+
+                {% endfor %}
+
+                {% for friend_request in pending_outgoing_requests %}
+                  <li class="dropdown-item mb-2 mt-2 font-weight-bold" style="display: inline-block;" onclick="location.href='{% url 'profile' slug=friend_request.to_user%}';">
+                      <text style='text-decoration: none; font-size: 1.15rem;'>{{ friend_request.to_user }}</text>
+
+                    <!-- Cancel Friend Request -->
+                    <form class="float-right" action="{% url 'cancelfriendrequest' %}" method="POST">
+                      {% csrf_token %}
+                      <input type="hidden" id="id_to_user" name="to_user" value="{{ friend_request.to_user.id }}">
+                      <button class="btn btn-sm btn-info" type="submit" name="button">Cancel Request</button>
+                    </form>
+                  </li>
+
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="tab-pane fade" id="blockedfriends" role="tabpanel" aria-labelledby="blocked-friends-tab">
+            </div>
+
+            <div class="tab-pane fade" id="searchusers" role="tabpanel" area-labelledby="search-users-tab">
+              <div id="ErrorText">Search for a user</div>
+              <!-- User Livesearch List Results -->
+              <ul id='search-results'>
+                <li class="dropdown-item d-flex align-items-center" style="display: inline-block;" href="#"></li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// Global variables for user_search.js are defined here as they require django tags
+
+// store current friends list for filtering search results
+var all_friends = [] 
+{% for friend in all_friends %}
+  all_friends.push('{{ friend }}')
+{% endfor %}
+
+// todo improve html elements building so its more readable and not purely string based.
+
+// button next to each search result 
+let button = '<button class="btn btn-sm btn-success" type="submit" name="button">Add Friend</button>'
+
+// form action for each search result
+let friend_request_action = 'action="{% url 'sendfriendrequest' %}'
+
+// form csrf 
+let csrf = '{% csrf_token %}'
+
+// current user username for filtering search results
+let username = '{{ user.get_username }}'
+
+// pending friendship requests for the user for filtering search results
+let pending_outgoing_requests_usernames = []
+{% for friend_request in pending_outgoing_requests %}
+  pending_outgoing_requests_usernames.push('{{ friend_request.to_user }}')
+{% endfor %}
+
+// console.log(all_friends)
+// console.log(pending_outgoing_requests_usernames)
+</script>
+<script src="{% static "js/user_search.js" %}">// Live Search Users for Adding Friends</script>
+
+{% endblock %}
